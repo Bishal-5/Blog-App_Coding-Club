@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const postSchema  = new mongoose.Schema({
+const BlogSchema  = new mongoose.Schema({
     title: {
         type: String,
         required: true,
@@ -10,7 +10,7 @@ const postSchema  = new mongoose.Schema({
     },
     authorId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        // required: true,
         ref: 'User',
     },
     timestamp: {
@@ -23,6 +23,6 @@ const postSchema  = new mongoose.Schema({
     }
 })
 
-const UserModal = mongoose.model('User', UserSchema)
+const UserModal = mongoose.model('Blog', BlogSchema)
 
-export default postSchema;
+export default UserModal;

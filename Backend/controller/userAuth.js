@@ -1,13 +1,19 @@
 import UserModel from '../models/user.js';
 import bcrypt from 'bcrypt';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { apiError } from '../utils/apiError.js';
+import { apiResponse } from '../utils/apiResponse.js';
 
 // Register User
-const Register = async (req, res) => {
+const Register = asyncHandler(async (req, res) => {
     try {
         const { username, email, password } = req.body
         const existUser = await UserModel.findOne({ email })
         if (existUser) {
-            return res.status(301).json({ success: false, message: "User Already Exist Please Login" })
+            const errorResponse = new apiError(301, "Existing User", [
+                {message: "User Already Exist Please Login!"}
+            ]);
+            return res.status(errorResponse.statusCode).json(errorResponse);
         }
         const hashPassword = await bcrypt.hash(password, 12);
         const newUser = new UserModel({
@@ -20,13 +26,15 @@ const Register = async (req, res) => {
         // Save the user to the database
         await newUser.save();
 
-        res.status(201).json({ success: true, message: 'User registered successfully', user: newUser });
+        const successResponse = new apiResponse(201, newUser, "User Registered Successfully!");
+        return res.status(successResponse.statusCode).json(successResponse);
 
     } catch (error) {
         console.error('Error during registration', error);
-        res.status(500).json({ error: 'Error during registration' });
+        const errorResponse = new apiError(500, "Error during registration", error.message);
+        return res.status(errorResponse.statusCode).json(errorResponse);
     }
-}
+})
 
 // Login User
 const Login = async (req, res) => {
@@ -34,18 +42,25 @@ const Login = async (req, res) => {
         const { email, password } = req.body;
         const existUser = await UserModel.findOne({ email });
         if (!existUser) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            const errorResponse = new apiError(404, "User Not Found", [
+                {message: "User Not Found!"}
+            ]);
+            return res.status(errorResponse.statusCode).json(errorResponse);
         }
         const isPasswordCorrect = await bcrypt.compare(password, existUser.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" });
+            const errorResponse = new apiError(400, "Incorrect Password", [
+                {message: "Incorrect Password!"}
+            ]);
+            return res.status(errorResponse.statusCode).json(errorResponse);
         }
         res.send(`Welcome!! ${existUser.username}`);
     }
     catch (error) {
         console.error('Error during login', error);
-        res.status(500).json({ error: 'Error during login' });
+        const errorResponse = new apiError(500, "Error during login", error.message);
+        return res.status(errorResponse.statusCode).json(errorResponse);
     }
 }
 
-export default { Register, Login };
+export { Register, Login };

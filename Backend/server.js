@@ -3,15 +3,18 @@ import dotenv from "dotenv";
 import cors from 'cors';
 import db from './config/db.js';
 import UserRoutes from './routes/userAuth.js';
+import BlogRoutes from './routes/blog.js';
 
 const app = express();
-app.use(express.json()); // data parsing
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ extended: true }));
+
 const PORT = process.env.PORT || 5000;
 dotenv.config(); // env variables
 db(); // database connection
 
 const corsOptoins = {
-    origin: true, 
+    origin: process.env.CORS_ORIGIN,
     credentials: true
 } // cors
 
@@ -21,6 +24,7 @@ app.get('/', (req, res) => {
 
 app.use(cors(corsOptoins)); // cors
 app.use('/user', UserRoutes);
+app.use('/blog', BlogRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);
