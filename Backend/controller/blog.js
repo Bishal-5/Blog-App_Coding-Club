@@ -93,8 +93,10 @@ const BlogDelete = async (req, res) => {
 
 const viewOnlyBlog = async (req, res) => {
     try {
-        const blogTitle = req.body;
-        const findBlog = await BlogModel.findOne(blogTitle);
+        // const blogTitle = req.body; // Using req.body (Blog Title)
+        const blogTitle = req.params.id; // Using req.params.id (Blog ID)
+        // const findBlog = await BlogModel.findOne(blogTitle); // Using req.body (Blog Title)
+        const findBlog = await BlogModel.findById(blogTitle); // Using req.params.id (Blog ID)
         if (!findBlog) {
             const errorResponse = new apiError(404, 'Blog not found!');
             return res.status(errorResponse.statusCode).json(errorResponse);
