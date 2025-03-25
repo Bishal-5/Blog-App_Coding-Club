@@ -1,13 +1,13 @@
-import BlogModel from '../models/blog.js';
+import Blog from '../models/blog.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 
-const ViewAllBlog=async(req,res)=>{
+// View all blog posts
+const ViewAllBlog = asyncHandler(async (req, res) => {
     try {
-        const allBlog= await BlogModel.find()
-        console.log(allBlog);
-        
+        const allBlog = await Blog.find()
+
         if (!allBlog) {
             const errorResponse = new apiError(404, 'Blog not found!');
             return res.status(errorResponse.statusCode).json(errorResponse);
@@ -20,17 +20,19 @@ const ViewAllBlog=async(req,res)=>{
         const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
         res.status(errorResponse.statusCode).json(errorResponse);
     }
-}
+})
 
+// Create a new blog post
 const BlogCreate = asyncHandler(async (req, res) => {
     try {
-        const { title, content } = req.body;
+        const { title, content, authorId } = req.body;
+        
 
         // Create the blog post
-        const CreateBlog = new BlogModel({
+        const CreateBlog = new Blog({
             title: title,
             content: content,
-            timestamp: new Date()
+            authorId : authorId,
         });
 
         // Save the blog post to the database
@@ -46,13 +48,14 @@ const BlogCreate = asyncHandler(async (req, res) => {
     }
 })
 
-const BlogUpdate = asyncHandler (async (req, res) => {
+// Update a blog post
+const BlogUpdate = asyncHandler(async (req, res) => {
     try {
         // const { title, content } = req.body;
         const updateContent = req.body;
         const blogId = req.params.id;
 
-        const findBlog = await BlogModel.findById(blogId);
+        const findBlog = await Blog.findById(blogId);
         if (!findBlog) {
             const errorResponse = new apiError(404, 'Blog not found!');
             return res.status(errorResponse.statusCode).json(errorResponse);
@@ -72,11 +75,12 @@ const BlogUpdate = asyncHandler (async (req, res) => {
     }
 })
 
-const BlogDelete = async (req, res) => {
+// Delete a blog post
+const BlogDelete = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;
 
-        const findBlog = await BlogModel.findById(blogId);
+        const findBlog = await Blog.findById(blogId);
         if (!findBlog) {
             const errorResponse = new apiError(404, 'Blog not found!');
             return res.status(errorResponse.statusCode).json(errorResponse);
@@ -89,14 +93,16 @@ const BlogDelete = async (req, res) => {
         const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
         res.status(errorResponse.statusCode).json(errorResponse);
     }
-}
+})
 
-const viewOnlyBlog = async (req, res) => {
+// View only one blog post
+const viewOnlyBlog = asyncHandler(async (req, res) => {
     try {
         // const blogTitle = req.body; // Using req.body (Blog Title)
         const blogTitle = req.params.id; // Using req.params.id (Blog ID)
         // const findBlog = await BlogModel.findOne(blogTitle); // Using req.body (Blog Title)
-        const findBlog = await BlogModel.findById(blogTitle); // Using req.params.id (Blog ID)
+        const findBlog = await Blog.findById(blogTitle); // Using req.params.id (Blog ID)
+
         if (!findBlog) {
             const errorResponse = new apiError(404, 'Blog not found!');
             return res.status(errorResponse.statusCode).json(errorResponse);
@@ -109,6 +115,6 @@ const viewOnlyBlog = async (req, res) => {
         const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
         res.status(errorResponse.statusCode).json(errorResponse);
     }
-}
+})
 
 export { ViewAllBlog, viewOnlyBlog, BlogCreate, BlogUpdate, BlogDelete };

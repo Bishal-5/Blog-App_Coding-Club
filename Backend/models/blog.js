@@ -10,7 +10,7 @@ const BlogSchema  = new mongoose.Schema({
     },
     authorId: {
         type: mongoose.Schema.Types.ObjectId,
-        // required: true,
+        required: true,
         ref: 'User',
     },
     timestamp: {
@@ -23,6 +23,6 @@ const BlogSchema  = new mongoose.Schema({
     }
 })
 
-const UserModal = mongoose.model('Blog', BlogSchema)
+const Blog = mongoose.model('Blog', BlogSchema)
 
-export default UserModal;
+export default Blog;
