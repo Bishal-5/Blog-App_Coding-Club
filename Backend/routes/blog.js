@@ -1,10 +1,12 @@
 import express from 'express'
-import { BlogCreate } from "../controller/blog.js";
+import { ViewAllBlog, viewOnlyBlog, BlogCreate, BlogUpdate, BlogDelete } from "../controller/blog.js";
 
 const BlogRoutes = express.Router();
 
-
+BlogRoutes.get('/', ViewAllBlog);
+BlogRoutes.get('/view', viewOnlyBlog);
 BlogRoutes.post('/create', BlogCreate);
-// BlogRoutes.post('/login', Login);
+BlogRoutes.post('/update/:id', BlogUpdate);
+BlogRoutes.delete('/delete/:id', BlogDelete);
 
 export default BlogRoutes;

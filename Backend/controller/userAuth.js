@@ -10,9 +10,7 @@ const Register = asyncHandler(async (req, res) => {
         const { username, email, password } = req.body
         const existUser = await UserModel.findOne({ email })
         if (existUser) {
-            const errorResponse = new apiError(301, "Existing User", [
-                {message: "User Already Exist Please Login!"}
-            ]);
+            const errorResponse = new apiError(301, 'User Already Exist. Please Login!');
             return res.status(errorResponse.statusCode).json(errorResponse);
         }
         const hashPassword = await bcrypt.hash(password, 12);
@@ -20,7 +18,6 @@ const Register = asyncHandler(async (req, res) => {
             username: username,
             email: email,
             password: hashPassword,
-            // profile: imagePath,
         });
 
         // Save the user to the database
@@ -41,20 +38,20 @@ const Login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const existUser = await UserModel.findOne({ email });
+        console.log(email);
+        
         if (!existUser) {
-            const errorResponse = new apiError(404, "User Not Found", [
-                {message: "User Not Found!"}
-            ]);
+            const errorResponse = new apiError(404, "User Not Found");
             return res.status(errorResponse.statusCode).json(errorResponse);
         }
         const isPasswordCorrect = await bcrypt.compare(password, existUser.password);
         if (!isPasswordCorrect) {
-            const errorResponse = new apiError(400, "Incorrect Password", [
-                {message: "Incorrect Password!"}
-            ]);
+            const errorResponse = new apiError(400, "Incorrect Password");
             return res.status(errorResponse.statusCode).json(errorResponse);
         }
-        res.send(`Welcome!! ${existUser.username}`);
+        
+        const successResponse = new apiResponse(200, existUser.username, "User Logged In Successfully!");
+        return res.status(successResponse.statusCode).json(successResponse);
     }
     catch (error) {
         console.error('Error during login', error);
