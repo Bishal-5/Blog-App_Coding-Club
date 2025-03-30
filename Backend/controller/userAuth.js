@@ -9,7 +9,7 @@ import { generateToken } from '../middleware/jwt.js';
 const Register = asyncHandler(async (req, res) => {
     try {
         const { username, email, password } = req.body
-        const existUser = await UserModel.findOne({ email })
+        const existUser = await User.findOne({ email })
         if (existUser) {
             const errorResponse = new apiError(301, 'User Already Exist. Please Login!');
             return res.status(errorResponse.statusCode).json(errorResponse);
@@ -60,7 +60,8 @@ const Login = asyncHandler(async (req, res) => {
 
         // Token Generate
         const payload = {
-            username: existUser.username
+            username: existUser.username,
+            userID : existUser._id
         };
 
         const token = generateToken(payload);

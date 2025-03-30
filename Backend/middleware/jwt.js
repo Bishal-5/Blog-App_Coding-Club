@@ -1,7 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
-import { apiResponse } from '../utils/apiResponse.js';
 
 // Add Middleware to verify the token
 const addMiddleware = (req, res, next) => {
@@ -14,7 +12,7 @@ const addMiddleware = (req, res, next) => {
     try {
         token = token.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.UserInfo = decoded;
 
         next();
     } catch (error) {
@@ -26,7 +24,7 @@ const addMiddleware = (req, res, next) => {
 
 // Generate Token
 const generateToken = (data) => {
-    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: '5d' });
+    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: '' });
 }
 
 export { addMiddleware, generateToken };
