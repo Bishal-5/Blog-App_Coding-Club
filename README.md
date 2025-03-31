@@ -49,6 +49,10 @@ A clean, modern, and user-friendly blog website designed to share articles, idea
 - `GET /blog/view` : View a specific one blog using Blog-Title.
 - `GET /blog/view/:id` : View a specific one blog using Blog-ID.
 
+**Like - Unlike Route (Login Required)**
+- `POST /blog/like/:id` : Like a Blog Post.
+- `PUT /blog/unlike/:id` : Unlike a Liked Blog Post.
+
 ## API Documentation
 - **Request - Response**
   [Read Docs](https://docs.google.com/document/d/1mVF_syyMn2uXsXeGTygyzUGr4nrh5jqIVnBw7ThfB3M/edit?usp=drive_link)
