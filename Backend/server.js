@@ -5,6 +5,7 @@ import db from './config/db.js';
 import UserRoutes from './routes/userAuth.js';
 import BlogRoutes from './routes/blog.js';
 import LikeRoutes from './routes/like.js';
+import CommentRoutes from './routes/comment.js';
 
 const app = express();
 app.use(express.json({ limit: "50kb" }));
@@ -27,6 +28,7 @@ app.use(cors(corsOptoins)); // cors
 app.use('/user', UserRoutes); // User SignUP & Login
 app.use('/blog', BlogRoutes); // Blog CRUD
 app.use('/blog', LikeRoutes); // Blog Like, Unlike
+app.use('/blog', CommentRoutes); // Comment
 
 app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);

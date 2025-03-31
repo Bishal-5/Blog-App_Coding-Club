@@ -23,13 +23,27 @@ const BlogSchema = new mongoose.Schema({
 
     likedBy: [{
         type: String,
-        default: '',
     }],
 
     likes: {
         type: Number,
         default: 0,
-    }
+    },
+
+    comments: [{
+        user : {
+            type: String,
+            required: true,
+        },
+        text : {
+            type: String,
+            required: true,
+        },
+        timestamp : {
+            type: Date,
+            default: new Date(),
+        },
+    }],
 })
 
 const Blog = mongoose.model('Blog', BlogSchema)
