@@ -24,7 +24,7 @@ const addMiddleware = (req, res, next) => {
 
 // Generate Token
 const generateToken = (data) => {
-    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: '' });
+    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: '5d' });
 }
 
 export { addMiddleware, generateToken };
