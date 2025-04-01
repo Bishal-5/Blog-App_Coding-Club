@@ -4,7 +4,7 @@ import { addComment, removeComment } from '../controller/comment.js';
 
 const CommentRoutes = express.Router();
 
-CommentRoutes.post('/addComment/:id', addMiddleware, addComment);
-CommentRoutes.put('/removeComment/:id', addMiddleware, removeComment);
+CommentRoutes.post('/add/:id', addMiddleware, addComment); // Add Comment
+CommentRoutes.put('/remove/:id', addMiddleware, removeComment); // Remove Comment
 
 export default CommentRoutes;

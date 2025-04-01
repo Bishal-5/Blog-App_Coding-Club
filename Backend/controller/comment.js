@@ -3,6 +3,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 
+// Add New Comment
 const addComment = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;
@@ -37,6 +38,7 @@ const addComment = asyncHandler(async (req, res) => {
     }
 });
 
+// Remove a comment
 const removeComment = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;
@@ -58,17 +60,17 @@ const removeComment = asyncHandler(async (req, res) => {
 
         const userComment = await blogPost.comments.filter(comment => comment.user === userName);
 
-        if ((!userComment) || (blogPost.authorId.toString() !== userID)) {
-            const errorResponse = new apiError(403, 'You are not authorized to delete this comment!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+        if ((userComment) || blogPost.user.toString() === userID) {
+            // Remove the comment from the comments array
+            await Blog.updateOne(blogPost, { $pull: { comments: { user: userName } } });
 
+            const successResponse = new apiResponse(200, null, 'Comment Removed!');
+            res.status(successResponse.statusCode).json(successResponse);
         }
-
-        // Remove the comment from the comments array
-        await Blog.updateOne(blogPost, { $pull: { comments: { user: userName } } });
-
-        const successResponse = new apiResponse(200, null, 'Comment Removed!');
-        res.status(successResponse.statusCode).json(successResponse);
+        else {
+            const errorResponse = new apiError(403, 'You are not authorized to remove this comment!');
+            return res.status(errorResponse.statusCode).json(errorResponse);
+        }
 
     } catch (error) {
         console.error(error);

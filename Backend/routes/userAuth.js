@@ -4,7 +4,7 @@ import { Register, Login } from '../controller/userAuth.js'
 const AuthRoutes = express.Router();
 
 
-AuthRoutes.post('/register', Register);
-AuthRoutes.post('/login', Login);
+AuthRoutes.post('/register', Register); // Register new user
+AuthRoutes.post('/login', Login); // Login existing user
 
 export default AuthRoutes;

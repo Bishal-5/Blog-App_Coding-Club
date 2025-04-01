@@ -4,6 +4,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 
+// Like Blog Post
 const addLike = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;
@@ -44,6 +45,7 @@ const addLike = asyncHandler(async (req, res) => {
     }
 });
 
+// Unlike Blog Post
 const unLike = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;

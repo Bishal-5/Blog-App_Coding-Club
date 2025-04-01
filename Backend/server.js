@@ -27,8 +27,8 @@ app.get('/', (req, res) => {
 app.use(cors(corsOptoins)); // cors
 app.use('/user', UserRoutes); // User SignUP & Login
 app.use('/blog', BlogRoutes); // Blog CRUD
-app.use('/blog', LikeRoutes); // Blog Like, Unlike
-app.use('/blog', CommentRoutes); // Comment
+app.use('/blog/like', LikeRoutes); // Blog Like, Unlike
+app.use('/blog/comment', CommentRoutes); // Blog Comment
 
 app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);
