@@ -41,7 +41,7 @@ A clean, modern, and user-friendly blog website designed to share articles, idea
 - `POST /user/register` : Register a new user.
 - `POST /user/login` : Login an existing user. (Generate Token)
 
-**BLOG ROUTE (Login Required)**
+**BLOG ROUTE (LOGIN REQUIRED)**
 - `POST /blog/create` : Create New Blog.
 - `PUT /blog/update/:id` : Update an existing blog.
 - `DELETE /blog/delete/:id` : Delete an existing blog.

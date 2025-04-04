@@ -9,7 +9,7 @@ const ViewAllBlog = asyncHandler(async (_, res) => {
         const allBlog = await Blog.find()
 
         if (!allBlog) {
-            return res
+            res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -65,7 +65,7 @@ const BlogUpdate = asyncHandler(async (req, res) => {
         const findBlog = await Blog.findById(blogId);
 
         if (!findBlog) {
-            return res
+            res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -73,7 +73,7 @@ const BlogUpdate = asyncHandler(async (req, res) => {
         // Check if the user is authorized to update the blog post
         if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) {
             // req.UserInfo.userID is used to get the user ID from the JWT token
-            return res
+            res
                 .status(403)
                 .json(new apiError(403, 'You are not authorized!'));
         }
@@ -101,11 +101,11 @@ const BlogUpdate = asyncHandler(async (req, res) => {
 // Delete a blog post
 const BlogDelete = asyncHandler(async (req, res) => {
     try {
-        const getBlog = req.params.id || req.body;
-        const findBlog = await (Blog.findById(getBlog)) || (Blog.findOne({ getBlog }));
+        const getBlog = req.params.id;
+        const findBlog = await (Blog.findById(getBlog));
 
         if (!findBlog) {
-            return res
+            res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -113,7 +113,7 @@ const BlogDelete = asyncHandler(async (req, res) => {
         // Check if the user is authorized to update the blog post
         if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) {
             // req.UserInfo.userID is used to get the user ID from the JWT token
-            return res
+            res
                 .status(403)
                 .json(new apiError(403, 'You are not authorized!'));
         }
@@ -134,20 +134,11 @@ const BlogDelete = asyncHandler(async (req, res) => {
 // View only one blog post
 const viewOnlyBlog = asyncHandler(async (req, res) => {
     try {
-
-        if (req.body) {
-            console.log(req.body);
-
-        } else if (req.params.id) {
-            await console.log(req.params.id);
-
-        }
-
         const getBlog = req.params.id
         const findBlog = await Blog.findById(getBlog);
 
         if (!findBlog) {
-            return res
+            res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }

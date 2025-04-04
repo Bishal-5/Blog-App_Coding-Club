@@ -12,13 +12,13 @@ const Register = asyncHandler(async (req, res) => {
         const existUser = await User.findOne({ $or: [{ email }, { username }] });
 
         if (!email || !password || !username) {
-            return res
+            res
                 .status(400)
                 .json(new apiError(400, 'Please Provide Email and Password'));
         }
 
         if (existUser) {
-            return res
+            res
                 .status(301)
                 .json(new apiError(301, 'User Already Exist. Please Login!'));
         }
@@ -54,7 +54,7 @@ const Login = asyncHandler(async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res
+            res
                 .status(400)
                 .json(new apiError(400, 'Please Provide Email and Password'));
         }
@@ -62,7 +62,7 @@ const Login = asyncHandler(async (req, res) => {
         const existUser = await User.findOne({ email });
 
         if (!existUser) {
-            return res
+            res
                 .status(404)
                 .json(new apiError(404, 'User Not Found. Please Register!'));
         }
@@ -70,7 +70,7 @@ const Login = asyncHandler(async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, existUser.password);
 
         if (!isPasswordCorrect) {
-            return res
+            res
                 .status(400)
                 .json(new apiError(400, 'Invalid Password!'));
         }
@@ -111,11 +111,14 @@ const Login = asyncHandler(async (req, res) => {
 const Logout = asyncHandler(async (req, res) => {
     try {
         // Clear the JWT cookie
-        res.clearCookie('authToken', {
+        const options = {
             httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict'
-        });
+            secure: false,
+            sameSite: 'None',
+            maxAge: 0 // Set maxAge to 0 to delete the cookie
+        }
+
+        res.clearCookie('token', options);
 
         return res
             .status(200)

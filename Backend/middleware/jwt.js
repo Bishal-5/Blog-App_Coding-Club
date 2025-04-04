@@ -3,7 +3,7 @@ import { apiError } from '../utils/apiError.js';
 
 // Add Middleware to verify the token
 const addMiddleware = (req, res, next) => {
-    let token = req.cookies.token || req.headers['authorization'];
+    let token =  req.cookies?.token || req.headers['authorization']?.replace('Bearer ', '');
 
     if (!token) {
         return res
@@ -11,7 +11,6 @@ const addMiddleware = (req, res, next) => {
             .json(new apiError(401, 'Token Not Found!'));
     }
     try {
-        token = token.split(' ')[1];
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             if (err) {
                 return res
