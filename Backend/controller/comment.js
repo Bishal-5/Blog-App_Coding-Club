@@ -13,8 +13,9 @@ const addComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
 
         // Create a new comment object
@@ -28,13 +29,17 @@ const addComment = asyncHandler(async (req, res) => {
         blogPost.comments.push(newComment);
         await blogPost.save();
 
-        const successResponse = new apiResponse(201, { Comment: newComment.text }, 'Comment Added!');
-        res.status(successResponse.statusCode).json(successResponse);
+        return res
+            .status(201)
+            .json(
+                new apiResponse(201, { Comment: newComment.text }, 'Comment Added!')
+            );
 
     } catch (error) {
         console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 });
 
@@ -48,14 +53,15 @@ const removeComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
 
         if ((!blogPost.comments) || (blogPost.comments.length === 0)) {
-            const errorResponse = new apiError(404, 'No comments found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
-
+            return res
+                .status(404)
+                .json(new apiError(404, 'No comments found!'));
         }
 
         const userComment = await blogPost.comments.filter(comment => comment.user === userName);
@@ -64,18 +70,21 @@ const removeComment = asyncHandler(async (req, res) => {
             // Remove the comment from the comments array
             await Blog.updateOne(blogPost, { $pull: { comments: { user: userName } } });
 
-            const successResponse = new apiResponse(200, null, 'Comment Removed!');
-            res.status(successResponse.statusCode).json(successResponse);
-        }
-        else {
-            const errorResponse = new apiError(403, 'You are not authorized to remove this comment!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(201)
+                .json(
+                    new apiResponse(201, { Comment: userComment.text }, 'Comment Removed!')
+                );
+        } else {
+            return res
+                .status(403)
+                .json(new apiError(403, 'You are not authorized to remove this comment!'));
         }
 
     } catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 });
 

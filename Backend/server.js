@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import dotenv from "dotenv";
 import cors from 'cors';
 import db from './config/db.js';
@@ -8,6 +9,7 @@ import LikeRoutes from './routes/like.js';
 import CommentRoutes from './routes/comment.js';
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -20,8 +22,9 @@ const corsOptoins = {
     credentials: true
 } // cors
 
-app.get('/', (req, res) => {
-    res.send('Hello!! Welcome To My Server...');
+app.get('/', (_, res) => {
+    res.send('Hello!! Welcome To My Server...')
+    
 })
 
 app.use(cors(corsOptoins)); // cors

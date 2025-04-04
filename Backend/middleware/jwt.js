@@ -3,28 +3,37 @@ import { apiError } from '../utils/apiError.js';
 
 // Add Middleware to verify the token
 const addMiddleware = (req, res, next) => {
-    let token = req.headers.authorization;
+    let token = req.cookies.token || req.headers['authorization'];
 
     if (!token) {
-        const errorResponse = new apiError(401, 'Token Not Found!');
-        return res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(401)
+            .json(new apiError(401, 'Token Not Found!'));
     }
     try {
         token = token.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.UserInfo = decoded;
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res
+                    .status(401)
+                    .json(new apiError(401, 'Inavlid Token!', err.message));
+            }
 
-        next();
+            // Attach the decoded user information to the request object
+            req.UserInfo = decoded;
+            next();
+        });
+
     } catch (error) {
-        console.error('Error during token verification', error);
-        const errorResponse = new apiError(401, 'Invalid Token!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+        .status(500)
+        .json( new apiError(500, 'Something Went Wrong!', error));
     }
 }
 
 // Generate Token
 const generateToken = (data) => {
-    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: '5d' });
+    return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: process.env.TOKEN_EXPIRY });
 }
 
 export { addMiddleware, generateToken };

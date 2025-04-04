@@ -4,21 +4,23 @@ import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 
 // View all blog posts
-const ViewAllBlog = asyncHandler(async (req, res) => {
+const ViewAllBlog = asyncHandler(async (_, res) => {
     try {
         const allBlog = await Blog.find()
 
         if (!allBlog) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
-        const successResponse = new apiResponse(200, allBlog);
-        res.status(successResponse.statusCode).json(successResponse);
+        return res
+            .status(200)
+            .json(new apiResponse(200, allBlog,));
 
     } catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 })
 
@@ -29,7 +31,7 @@ const BlogCreate = asyncHandler(async (req, res) => {
 
         // Create the blog post
         const CreateBlog = new Blog({
-            authorId: req.UserInfo.userID, 
+            authorId: req.UserInfo.userID,
             title: title,
             content: content,
         });
@@ -38,12 +40,18 @@ const BlogCreate = asyncHandler(async (req, res) => {
         await CreateBlog.save();
 
         // Respond with success message
-        const successResponse = new apiResponse(201, CreateBlog, 'Blog Created Successfully!');
-        res.status(successResponse.statusCode).json(successResponse);
+        return res
+            .status(201)
+            .json(new apiResponse(
+                201,
+                { title: CreateBlog.title, content: CreateBlog.content },
+                'Blog Created Successfully!',
+            ));
+
     } catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 })
 
@@ -53,20 +61,21 @@ const BlogUpdate = asyncHandler(async (req, res) => {
         // const { title, content } = req.body;
         const updateContent = req.body;
         const blogId = req.params.id;
-        
+
         const findBlog = await Blog.findById(blogId);
-        
+
         if (!findBlog) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
-        
+
         // Check if the user is authorized to update the blog post
-        if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) { 
+        if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) {
             // req.UserInfo.userID is used to get the user ID from the JWT token
-            const errorResponse = new apiError(403, 'You are not authorized!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
-            
+            return res
+                .status(403)
+                .json(new apiError(403, 'You are not authorized!'));
         }
 
         const blogToUpdate = await Blog.findByIdAndUpdate(blogId, updateContent, {
@@ -74,63 +83,84 @@ const BlogUpdate = asyncHandler(async (req, res) => {
             runValidators: true,
         });
 
-        const successResponse = new apiResponse(200, blogToUpdate, 'Blog Updated Successfully!');
-        res.status(successResponse.statusCode).json(successResponse);
+        return res
+            .status(200)
+            .json(new apiResponse(
+                200,
+                { title: blogToUpdate.title, content: blogToUpdate.content },
+                'Blog Updated Successfully!',
+            ));
+
     } catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 })
 
 // Delete a blog post
 const BlogDelete = asyncHandler(async (req, res) => {
     try {
-        const blogId = req.params.id;
+        const getBlog = req.params.id || req.body;
+        const findBlog = await (Blog.findById(getBlog)) || (Blog.findOne({ getBlog }));
 
-        const findBlog = await Blog.findById(blogId);
         if (!findBlog) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
 
         // Check if the user is authorized to update the blog post
-        if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) { 
+        if (findBlog.authorId.toString() !== req.UserInfo.userID.toString()) {
             // req.UserInfo.userID is used to get the user ID from the JWT token
-            const errorResponse = new apiError(403, 'You are not authorized!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
-            
+            return res
+                .status(403)
+                .json(new apiError(403, 'You are not authorized!'));
         }
 
-        const blogToDelete = await Blog.findByIdAndDelete(blogId);
-        const successResponse = new apiResponse(200, blogToDelete.title, 'Blog Deleted Successfully!');
-        res.status(successResponse.statusCode).json(successResponse);
+        const blogToDelete = await Blog.findByIdAndDelete(getBlog);
+
+        return res
+            .status(200)
+            .json(new apiResponse(200, blogToDelete.title, 'Blog Deleted Successfully!'));
+
     } catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 })
 
 // View only one blog post
 const viewOnlyBlog = asyncHandler(async (req, res) => {
     try {
-        // const blogTitle = req.body; // Using req.body (Blog Title)
-        const blogTitle = req.params.id; // Using req.params.id (Blog ID)
-        // const findBlog = await Blog.findOne(blogTitle); // Using req.body (Blog Title)
-        const findBlog = await Blog.findById(blogTitle); // Using req.params.id (Blog ID)
+
+        if (req.body) {
+            console.log(req.body);
+
+        } else if (req.params.id) {
+            await console.log(req.params.id);
+
+        }
+
+        const getBlog = req.params.id
+        const findBlog = await Blog.findById(getBlog);
 
         if (!findBlog) {
-            const errorResponse = new apiError(404, 'Blog not found!');
-            return res.status(errorResponse.statusCode).json(errorResponse);
+            return res
+                .status(404)
+                .json(new apiError(404, 'Blog not found!'));
         }
-        const successResponse = new apiResponse(200, findBlog);
-        res.status(successResponse.statusCode).json(successResponse);
+
+        return res
+            .status(200)
+            .json(new apiResponse(200, findBlog));
     }
+
     catch (error) {
-        console.error(error);
-        const errorResponse = new apiError(500, 'Internal Server Error!', error.message);
-        res.status(errorResponse.statusCode).json(errorResponse);
+        return res
+            .status(500)
+            .json(new apiError(500, 'Internal Server Error!', error.message));
     }
 })
 

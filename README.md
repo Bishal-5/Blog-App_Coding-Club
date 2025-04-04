@@ -46,16 +46,15 @@ A clean, modern, and user-friendly blog website designed to share articles, idea
 - `PUT /blog/update/:id` : Update an existing blog.
 - `DELETE /blog/delete/:id` : Delete an existing blog.
 - `GET /blog` : View all blogs.
-- `GET /blog/view` : View a specific one blog using Blog-Title.
 - `GET /blog/view/:id` : View a specific one blog using Blog-ID.
 
 **LIKE - UNLIKE ROUTE (LOGIN REQUIRED)**
-- `POST /blog/like/:id` : Like a Blog Post.
-- `PUT /blog/unlike/:id` : Unlike a Liked Blog Post.
+- `POST /blog/like/add/:id` : Like a Blog Post.
+- `PUT /blog/like/remove/:id` : Unlike a Liked Blog Post.
 
 **COMMENTS ROUTE (LOGIN REQUIRED)**
-- `POST /blog/addComment/:id` : Add Comment on a Blog Post.
-- `PUT /blog/removeComment/:id` : Remove Comment from a Blog Post.
+- `POST /blog/comment/add/:id` : Add Comment on a Blog Post.
+- `PUT /blog/comment/remove/:id` : Remove Comment from a Blog Post.
 
 ## API Documentation
 - **Request - Response**
