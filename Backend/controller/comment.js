@@ -13,7 +13,7 @@ const addComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -53,13 +53,13 @@ const removeComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
 
         if ((!blogPost.comments) || (blogPost.comments.length === 0)) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'No comments found!'));
         }
@@ -76,7 +76,7 @@ const removeComment = asyncHandler(async (req, res) => {
                     new apiResponse(201, { Comment: userComment.text }, 'Comment Removed!')
                 );
         } else {
-            res
+            return res
                 .status(403)
                 .json(new apiError(403, 'You are not authorized to remove this comment!'));
         }

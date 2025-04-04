@@ -12,13 +12,13 @@ const Register = asyncHandler(async (req, res) => {
         const existUser = await User.findOne({ $or: [{ email }, { username }] });
 
         if (!email || !password || !username) {
-            res
+            return res
                 .status(400)
                 .json(new apiError(400, 'Please Provide Email and Password'));
         }
 
         if (existUser) {
-            res
+            return res
                 .status(301)
                 .json(new apiError(301, 'User Already Exist. Please Login!'));
         }
@@ -54,7 +54,7 @@ const Login = asyncHandler(async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            res
+            return res
                 .status(400)
                 .json(new apiError(400, 'Please Provide Email and Password'));
         }
@@ -62,7 +62,7 @@ const Login = asyncHandler(async (req, res) => {
         const existUser = await User.findOne({ email });
 
         if (!existUser) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'User Not Found. Please Register!'));
         }
@@ -70,7 +70,7 @@ const Login = asyncHandler(async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, existUser.password);
 
         if (!isPasswordCorrect) {
-            res
+            return res
                 .status(400)
                 .json(new apiError(400, 'Invalid Password!'));
         }
@@ -110,6 +110,23 @@ const Login = asyncHandler(async (req, res) => {
 // Logout User
 const Logout = asyncHandler(async (req, res) => {
     try {
+        const userName = req.UserInfo.username;
+        const token = req.cookies['token'];
+
+        // Check if the 'token' cookie exists and has a value
+        if (!token) {
+            return res
+                .status(400)
+                .json(new apiError(400, 'No Active Session Found!'));
+        }
+
+        if (!userName) {
+            return res
+                .status(400)
+                .json(new apiError(400, "User Doesn't Exist!"));
+
+        }
+
         // Clear the JWT cookie
         const options = {
             httpOnly: true,
@@ -123,7 +140,7 @@ const Logout = asyncHandler(async (req, res) => {
         return res
             .status(200)
             .json(
-                new apiResponse(200, null, "User Logged Out Successfully!")
+                new apiResponse(200, userName, "User Logged Out Successfully!")
             );
 
     } catch (error) {
@@ -133,4 +150,54 @@ const Logout = asyncHandler(async (req, res) => {
     }
 });
 
-export { Register, Login, Logout };
+// Change Password
+const changePassword = asyncHandler(async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const userName = req.UserInfo.username;
+
+        if (!oldPassword || !newPassword) {
+            return res
+                .status(400)
+                .json(new apiError(400, 'Please Provide Old and New Password'));
+        }
+
+        if (oldPassword === newPassword) {
+            return res
+                .status(400)
+                .json(new apiError(400, 'New Password Cannot Be Same as Old Password!'));
+        }
+
+        const existUser = await User.findOne({ username: userName });
+
+        if (!existUser) {
+            return res
+                .status(404)
+                .json(new apiError(404, 'User Not Found!'));
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(oldPassword, existUser.password);
+
+        if (!isPasswordCorrect) {
+            return res
+                .status(400)
+                .json(new apiError(400, 'Incorrect Password!'));
+        }
+
+        const hashNewPassword = await bcrypt.hash(newPassword, 12);
+        existUser.password = hashNewPassword;
+        await existUser.save();
+
+        return res
+            .status(200)
+            .json(
+                new apiResponse(200, { username: existUser.username }, "Password Changed Successfully!")
+            );
+    } catch (error) {
+        return res
+            .status(500)
+            .json(new apiError(500, 'Something Went Wrong!', error.message));
+    };
+});
+
+export { Register, Login, Logout, changePassword };

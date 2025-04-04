@@ -13,7 +13,7 @@ const addLike = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -22,7 +22,7 @@ const addLike = asyncHandler(async (req, res) => {
         const alreadyLiked = blogPost.likedBy.includes(userName);
 
         if (alreadyLiked) {
-            res
+            return res
                 .status(400)
                 .json(new apiError(400, 'You have already liked this Blog!'));
         }
@@ -58,7 +58,7 @@ const unLike = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(404, 'Blog not found!'));
         }
@@ -67,7 +67,7 @@ const unLike = asyncHandler(async (req, res) => {
         const alreadyLiked = blogPost.likedBy.includes(userName);
 
         if (!alreadyLiked) {
-            res
+            return res
                 .status(404)
                 .json(new apiError(400, 'You Have Not Liked This Blog!'));
         }

@@ -25,6 +25,12 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
 
+    blogsCreated: [{
+        type: String,
+        ref: 'Blog',
+        default: '',
+    }],
+
     likedBlogs: [{
         type: String,
         ref: 'Blog',
