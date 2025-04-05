@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
+import { blogNotFound, catchError } from '../utils/resFunction.js';
 
 // Like Blog Post
 const addLike = asyncHandler(async (req, res) => {
@@ -13,9 +14,7 @@ const addLike = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         // Check if the user has already liked the post        
@@ -43,9 +42,7 @@ const addLike = asyncHandler(async (req, res) => {
             );
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 });
 
@@ -58,9 +55,7 @@ const unLike = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         // Check if the user has already liked the post        
@@ -87,9 +82,7 @@ const unLike = asyncHandler(async (req, res) => {
             );
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 

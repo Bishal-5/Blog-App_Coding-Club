@@ -2,6 +2,7 @@ import Blog from "../models/blog.js";
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
+import { blogNotFound, catchError, notAuthorized } from '../utils/resFunction.js';
 
 // Add New Comment
 const addComment = asyncHandler(async (req, res) => {
@@ -13,9 +14,7 @@ const addComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         // Create a new comment object
@@ -36,10 +35,7 @@ const addComment = asyncHandler(async (req, res) => {
             );
 
     } catch (error) {
-        console.error(error);
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 });
 
@@ -53,9 +49,7 @@ const removeComment = asyncHandler(async (req, res) => {
         const blogPost = await Blog.findById(blogId);
 
         if (!blogPost) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         if ((!blogPost.comments) || (blogPost.comments.length === 0)) {
@@ -76,15 +70,11 @@ const removeComment = asyncHandler(async (req, res) => {
                     new apiResponse(201, { Comment: userComment.text }, 'Comment Removed!')
                 );
         } else {
-            return res
-                .status(403)
-                .json(new apiError(403, 'You are not authorized to remove this comment!'));
+            return notAuthorized(res);
         }
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 });
 

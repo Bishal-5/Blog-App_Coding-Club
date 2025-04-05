@@ -1,18 +1,16 @@
 import Blog from '../models/blog.js';
 import User from '../models/user.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
+import { notAuthorized, catchError, blogNotFound } from '../utils/resFunction.js';
 
 // View all blog posts
 const ViewAllBlog = asyncHandler(async (_, res) => {
     try {
         const allBlog = await Blog.find()
 
-        if (!allBlog) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+        if (allBlog.length === 0) {
+            return blogNotFound(res);
         }
 
         return res
@@ -20,9 +18,7 @@ const ViewAllBlog = asyncHandler(async (_, res) => {
             .json(new apiResponse(200, allBlog,));
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 
@@ -34,9 +30,7 @@ const BlogCreate = asyncHandler(async (req, res) => {
 
         // Check if the user is authorized to create a blog post
         if (!authorId) {
-            return res
-                .status(403)
-                .json(new apiError(403, 'You are not authorized!'));
+            return notAuthorized(res);
         }
 
         // Create the blog post
@@ -52,7 +46,6 @@ const BlogCreate = asyncHandler(async (req, res) => {
         // Add the blog title to the user's createdBlogs array    
         await User.findByIdAndUpdate(authorId, { $push: { blogsCreated: CreateBlog.title } })
 
-        // Respond with success message
         return res
             .status(201)
             .json(new apiResponse(
@@ -62,9 +55,7 @@ const BlogCreate = asyncHandler(async (req, res) => {
             ));
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 
@@ -79,17 +70,13 @@ const BlogUpdate = asyncHandler(async (req, res) => {
         const findBlog = await Blog.findById(blogId);
 
         if (!findBlog) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         // Check if the user is authorized to update the blog post
         if (findBlog.authorId.toString() !== userID.toString()) {
             // req.UserInfo.userID is used to get the user ID from the JWT token
-            return res
-                .status(403)
-                .json(new apiError(403, 'You are not authorized!'));
+            return notAuthorized(res);
         }
 
         const blogToUpdate = await Blog.findByIdAndUpdate(blogId, updateContent, {
@@ -108,9 +95,7 @@ const BlogUpdate = asyncHandler(async (req, res) => {
             ));
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 
@@ -122,17 +107,12 @@ const BlogDelete = asyncHandler(async (req, res) => {
         const userID = req.UserInfo.userID;
 
         if (!findBlog) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         // Check if the user is authorized to update the blog post
         if (findBlog.authorId.toString() !== userID.toString()) {
-            // req.UserInfo.userID is used to get the user ID from the JWT token
-            return res
-                .status(403)
-                .json(new apiError(403, 'You are not authorized!'));
+            return notAuthorized(res);
         }
 
         const blogToDelete = await Blog.findByIdAndDelete(getBlogID);
@@ -144,9 +124,7 @@ const BlogDelete = asyncHandler(async (req, res) => {
             .json(new apiResponse(200, blogToDelete.title, 'Blog Deleted Successfully!'));
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 
@@ -157,9 +135,7 @@ const viewOnlyBlog = asyncHandler(async (req, res) => {
         const findBlog = await Blog.findById(getBlog);
 
         if (!findBlog) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'Blog not found!'));
+            return blogNotFound(res);
         }
 
         return res
@@ -168,9 +144,7 @@ const viewOnlyBlog = asyncHandler(async (req, res) => {
     }
 
     catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Internal Server Error!', error.message));
+        return catchError(res, error);
     }
 })
 

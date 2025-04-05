@@ -4,17 +4,17 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { generateToken } from '../middleware/jwt.js';
+import { uploadCloudinary, getPublicId, deleteCloudinary } from '../config/cloudinary.js';
+import { userNotFound, catchError, blankField, cloudinaryResponse } from '../utils/resFunction.js';
 
 // Register User
 const Register = asyncHandler(async (req, res) => {
     try {
-        const { username, email, password } = req.body
-        const existUser = await User.findOne({ $or: [{ email }, { username }] });
+        const { fullName, email, password, bio } = req.body
+        const existUser = await User.findOne({ $or: [{ email }, { fullName }] });
 
-        if (!email || !password || !username) {
-            return res
-                .status(400)
-                .json(new apiError(400, 'Please Provide Email and Password'));
+        if (!email || !password || !fullName) {
+            return blankField(res);
         }
 
         if (existUser) {
@@ -24,9 +24,28 @@ const Register = asyncHandler(async (req, res) => {
         }
 
         const hashPassword = await bcrypt.hash(password, 12);
+
+        // Generate username from fullName and random number
+        let userName = fullName.split(" ")[0].toUpperCase(); // Get the first name and convert to uppercase
+        let randomNumber = Math.floor(Math.random() * 900) + 100; // Generate number between 100 and 999
+        if (randomNumber > 999) randomNumber = 999; // Ensure the number is not greater than 999
+        userName = `${userName}${randomNumber}`; // Create username
+
+        // Set profile photo & Upload image on cloudinary
+        let cloudinaryFilePath = null;
+
+        if (req.file) { // If no file uploaded
+            const localFilePath = req.file.path // Local file path
+            cloudinaryFilePath = await uploadCloudinary(localFilePath);
+            cloudinaryResponse(req, res, cloudinaryFilePath);
+        }
+
         const newUser = new User({
-            username: username,
+            fullName: fullName,
+            username: userName,
             email: email,
+            profilePicture: cloudinaryFilePath || 'No Profile Picture',
+            bio: bio,
             password: hashPassword,
         });
 
@@ -35,16 +54,17 @@ const Register = asyncHandler(async (req, res) => {
 
         return res
             .status(201)
-            .json(new apiResponse(
-                201,
-                { username: newUser.username, email: newUser.email },
-                "User Registered Successfully!"
-            ));
-
+            .json(
+                new apiResponse(
+                    201,
+                    { username: newUser.username, email: newUser.email },
+                    "User Registered Successfully!"
+                )
+            );
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, "Error during registration", error.message))
+        console.log(error);
+
+        return catchError(res, error);
     };
 });
 
@@ -54,17 +74,13 @@ const Login = asyncHandler(async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res
-                .status(400)
-                .json(new apiError(400, 'Please Provide Email and Password'));
+            return blankField(res);
         }
 
         const existUser = await User.findOne({ email });
 
         if (!existUser) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'User Not Found. Please Register!'));
+            return userNotFound(res);
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, existUser.password);
@@ -101,9 +117,7 @@ const Login = asyncHandler(async (req, res) => {
             ));
     }
     catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Something Went Wrong!', error.message));
+        return catchError(res, error);
     };
 });
 
@@ -118,13 +132,6 @@ const Logout = asyncHandler(async (req, res) => {
             return res
                 .status(400)
                 .json(new apiError(400, 'No Active Session Found!'));
-        }
-
-        if (!userName) {
-            return res
-                .status(400)
-                .json(new apiError(400, "User Doesn't Exist!"));
-
         }
 
         // Clear the JWT cookie
@@ -144,60 +151,105 @@ const Logout = asyncHandler(async (req, res) => {
             );
 
     } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, "Error during logout", error.message));
+        return catchError(res, error);
     }
 });
 
-// Change Password
-const changePassword = asyncHandler(async (req, res) => {
+// Update Profile
+const updateProfile = asyncHandler(async (req, res) => {
     try {
-        const { oldPassword, newPassword } = req.body;
-        const userName = req.UserInfo.username;
+        const userID = req.UserInfo.userID;
+        let existUser = await User.findById(userID);
+        let hashNewPassword = existUser.password;
+        const { fullName, userName, email, bio, removeProfilePicture, oldPassword, newPassword } = req.body;
 
-        if (!oldPassword || !newPassword) {
+        // Change profile photo & Upload image on cloudinary
+        let cloudinaryFilePath = existUser.profilePicture || null;
+
+        if (removeProfilePicture === 'true') {
+            // Cloudinary API to delete the image from Cloudinary
+            if (existUser.profilePicture  !== 'No Profile Picture') {
+                const publicId = getPublicId(existUser.profilePicture);
+                await deleteCloudinary(publicId);
+            }
+            cloudinaryFilePath = 'No Profile Picture';
+
+        } else if (req.file) {
+            const localFilePath = await req.file.path // Local file path
+            if (existUser.profilePicture  !== 'No Profile Picture') {
+                const publicId = getPublicId(existUser.profilePicture);
+                await deleteCloudinary(publicId);
+            }
+            cloudinaryFilePath = await uploadCloudinary(localFilePath);
+            cloudinaryResponse(req, res, cloudinaryFilePath);
+        }
+
+        // Change Password
+        if (!oldPassword && !newPassword) null;
+        else if (oldPassword && !newPassword) {
             return res
                 .status(400)
-                .json(new apiError(400, 'Please Provide Old and New Password'));
+                .json(new apiError(400, 'New Password Cannot Be Empty!'));
         }
-
-        if (oldPassword === newPassword) {
+        else if (!oldPassword && newPassword) {
             return res
                 .status(400)
-                .json(new apiError(400, 'New Password Cannot Be Same as Old Password!'));
+                .json(new apiError(400, 'Old Password Cannot Be Empty!'));
+        }
+        else if (oldPassword && newPassword) {
+            if (oldPassword === newPassword) {
+                return res
+                    .status(400)
+                    .json(new apiError(400, 'New Password Cannot Be Same as Old Password!'));
+            }
+
+            const isPasswordCorrect = await bcrypt.compare(oldPassword, existUser.password);
+
+            if (!isPasswordCorrect) {
+                return res
+                    .status(400)
+                    .json(new apiError(400, 'Incorrect Old Password!'));
+            }
+
+            hashNewPassword = await bcrypt.hash(newPassword, 12);
         }
 
-        const existUser = await User.findOne({ username: userName });
-
-        if (!existUser) {
-            return res
-                .status(404)
-                .json(new apiError(404, 'User Not Found!'));
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(oldPassword, existUser.password);
-
-        if (!isPasswordCorrect) {
-            return res
-                .status(400)
-                .json(new apiError(400, 'Incorrect Password!'));
-        }
-
-        const hashNewPassword = await bcrypt.hash(newPassword, 12);
-        existUser.password = hashNewPassword;
-        await existUser.save();
+        await User.findByIdAndUpdate(userID, {
+            fullName: fullName,
+            username: userName,
+            profilePicture: cloudinaryFilePath,
+            password: hashNewPassword,
+            bio: bio,
+            email: email
+        });
 
         return res
             .status(200)
-            .json(
-                new apiResponse(200, { username: existUser.username }, "Password Changed Successfully!")
-            );
-    } catch (error) {
-        return res
-            .status(500)
-            .json(new apiError(500, 'Something Went Wrong!', error.message));
-    };
-});
+            .json(new apiResponse(200, "Profile Updated Successfully!"));
 
-export { Register, Login, Logout, changePassword };
+    } catch (error) {
+        return catchError(res, error);
+    }
+})
+
+// View Profile
+const viewProfile = asyncHandler(async (req, res) => {
+    try {
+        const userID = req.UserInfo.userID;
+
+        const existUser = await User.findById(userID).select('-password -__v -_id');
+        // select('-password -__v') => Exclude password and __v field from the response
+
+        if (!existUser) {
+            return userNotFound(res);
+        }
+
+        return res
+            .status(200)
+            .json(new apiResponse(200, existUser, "Profile Fetched Successfully!"));
+    } catch (error) {
+        return catchError(res, error);
+    }
+})
+
+export { Register, Login, Logout, updateProfile, viewProfile };

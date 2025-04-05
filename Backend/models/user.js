@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema({
+    fullName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    
     username: {
         type: String,
         required: true,
@@ -9,7 +15,8 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true
     },
 
     password: {
@@ -19,10 +26,12 @@ const UserSchema = new mongoose.Schema({
 
     profilePicture: {
         type: String,
+        default: 'No Profile Picture',
     },
 
     bio: {
         type: String,
+        default: '',
     },
 
     blogsCreated: [{
