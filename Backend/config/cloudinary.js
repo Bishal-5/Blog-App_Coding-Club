@@ -3,7 +3,7 @@ import fs from "fs";
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Configuration
+// Cloudinary Configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -60,7 +60,7 @@ const deleteCloudinary = async (getPublicId) => {
         if (deleteFile.result === "ok") {
             console.log(`File deleted successfully from Cloudinary: ${getPublicId}`);
             return true;
-        }else{
+        } else {
             console.error(`Failed to delete file from Cloudinary: ${getPublicId}`);
             return false;
         }

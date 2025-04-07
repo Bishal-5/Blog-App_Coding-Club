@@ -26,15 +26,15 @@ const Register = asyncHandler(async (req, res) => {
         const hashPassword = await bcrypt.hash(password, 12);
 
         // Generate username from fullName and random number
-        let userName = fullName.split(" ")[0].toUpperCase(); // Get the first name and convert to uppercase
+        let userName = fullName.split(" ")[0].toUpperCase(); // Get the first name
         let randomNumber = Math.floor(Math.random() * 900) + 100; // Generate number between 100 and 999
         if (randomNumber > 999) randomNumber = 999; // Ensure the number is not greater than 999
-        userName = `${userName}${randomNumber}`; // Create username
+        userName = `${userName}${randomNumber}`;
 
         // Set profile photo & Upload image on cloudinary
         let cloudinaryFilePath = null;
 
-        if (req.file) { // If no file uploaded
+        if (req.file) {
             const localFilePath = req.file.path // Local file path
             cloudinaryFilePath = await uploadCloudinary(localFilePath);
             cloudinaryResponse(req, res, cloudinaryFilePath);
@@ -106,7 +106,7 @@ const Login = asyncHandler(async (req, res) => {
             maxAge: 5 * 24 * 60 * 60 * 1000 // 5 days
         }
 
-        // Set the JWT token in a cookie
+        // Set the JWT token in cookie
         return res
             .cookie('token', token, options)
             .status(200)
@@ -161,22 +161,22 @@ const updateProfile = asyncHandler(async (req, res) => {
         const userID = req.UserInfo.userID;
         let existUser = await User.findById(userID);
         let hashNewPassword = existUser.password;
-        const { fullName, userName, email, bio, removeProfilePicture, oldPassword, newPassword } = req.body;
-
-        // Change profile photo & Upload image on cloudinary
         let cloudinaryFilePath = existUser.profilePicture || null;
 
+        const { fullName, userName, email, bio, removeProfilePicture, oldPassword, newPassword } = req.body;
+
+        // Remove Profile Picture
         if (removeProfilePicture === 'true') {
             // Cloudinary API to delete the image from Cloudinary
-            if (existUser.profilePicture  !== 'No Profile Picture') {
+            if (existUser.profilePicture !== 'No Profile Picture') {
                 const publicId = getPublicId(existUser.profilePicture);
                 await deleteCloudinary(publicId);
             }
             cloudinaryFilePath = 'No Profile Picture';
 
         } else if (req.file) {
-            const localFilePath = await req.file.path // Local file path
-            if (existUser.profilePicture  !== 'No Profile Picture') {
+            const localFilePath = await req.file.path
+            if (existUser.profilePicture !== 'No Profile Picture') {
                 const publicId = getPublicId(existUser.profilePicture);
                 await deleteCloudinary(publicId);
             }

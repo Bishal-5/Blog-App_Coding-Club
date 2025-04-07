@@ -7,6 +7,7 @@ import UserRoutes from './routes/userAuth.js';
 import BlogRoutes from './routes/blog.js';
 import LikeRoutes from './routes/like.js';
 import CommentRoutes from './routes/comment.js';
+import FollowRoutes from './routes/follow.js';
 
 const app = express();
 app.use(cookieParser());
@@ -24,14 +25,15 @@ const corsOptoins = {
 
 app.get('/', (_, res) => {
     res.send('Hello!! Welcome To My Server...')
-    
+
 })
 
 app.use(cors(corsOptoins)); // cors
-app.use('/user', UserRoutes); // User SignUP & Login
+app.use('/user', UserRoutes); // User Signup, Login, Logout, View Profile, Update Profile)
 app.use('/blog', BlogRoutes); // Blog CRUD
 app.use('/blog/like', LikeRoutes); // Blog Like, Unlike
 app.use('/blog/comment', CommentRoutes); // Blog Comment
+app.use('/user', FollowRoutes); // Blog Comment
 
 app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);

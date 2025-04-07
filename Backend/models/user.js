@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    
+
     username: {
         type: String,
         required: true,
@@ -45,6 +45,26 @@ const UserSchema = new mongoose.Schema({
         ref: 'Blog',
         default: '',
     }],
+
+    followers: {
+        type: Number,
+        default: 0,
+    },
+
+    following: {
+        type: Number,
+        default: 0,
+    },
+
+    followersList: [{
+        type: String,
+        ref: 'User',
+    }],
+
+    followingList: [{
+        type: String,
+        ref: 'User',
+    }]
 })
 
 

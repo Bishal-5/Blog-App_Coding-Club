@@ -44,7 +44,6 @@ const removeComment = asyncHandler(async (req, res) => {
     try {
         const blogId = req.params.id;
         const userName = req.UserInfo.username;
-        const userID = req.UserInfo.userID;
 
         const blogPost = await Blog.findById(blogId);
 
@@ -58,9 +57,14 @@ const removeComment = asyncHandler(async (req, res) => {
                 .json(new apiError(404, 'No comments found!'));
         }
 
-        const userComment = await blogPost.comments.filter(comment => comment.user === userName);
+        const userComment = blogPost.comments.filter(comment => comment.user === userName);
 
-        if ((userComment) || blogPost.user.toString() === userID) {
+        if (userComment.length > 0) {
+            // Check if the user is the author of the comment
+            if (userComment[0].user !== userName) {
+                return notAuthorized(res);
+            }
+
             // Remove the comment from the comments array
             await Blog.updateOne(blogPost, { $pull: { comments: { user: userName } } });
 

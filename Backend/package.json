@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TarunPal0812/BlogApp.git"
+    "url": "git+https://github.com/Bishal-5/Blog-App.git"
   },
-  "author": "",
+  "author": "Bishal Naskar",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TarunPal0812/BlogApp/issues"
+    "url": "https://github.com/Bishal-5/Blog-App/issues"
   },
-  "homepage": "https://github.com/TarunPal0812/BlogApp#readme",
+  "homepage": "https://github.com/Bishal-5/Blog-App#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.6.0",

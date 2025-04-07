@@ -31,15 +31,15 @@ const BlogSchema = new mongoose.Schema({
     },
 
     comments: [{
-        user : {
+        user: {
             type: String,
             required: true,
         },
-        text : {
+        text: {
             type: String,
             required: true,
         },
-        timestamp : {
+        timestamp: {
             type: Date,
             default: new Date(),
         },

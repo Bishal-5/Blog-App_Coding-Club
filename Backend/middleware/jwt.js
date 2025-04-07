@@ -3,7 +3,7 @@ import { apiError } from '../utils/apiError.js';
 
 // Add Middleware to verify the token
 const addMiddleware = (req, res, next) => {
-    let token =  req.cookies?.token || req.headers['authorization']?.replace('Bearer ', '');
+    let token = req.cookies?.token || req.headers['authorization']?.replace('Bearer ', '');
 
     if (!token) {
         return res
@@ -25,8 +25,8 @@ const addMiddleware = (req, res, next) => {
 
     } catch (error) {
         return res
-        .status(500)
-        .json( new apiError(500, 'Something Went Wrong!', error));
+            .status(500)
+            .json(new apiError(500, 'Something Went Wrong!', error));
     }
 }
 
